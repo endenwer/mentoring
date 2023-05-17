@@ -23,6 +23,8 @@ Things you may want to cover:
 
 * ...
 
+https://core.telegram.org/bots/api
+
 - create telegram bot
 - brew install ngrok/ngrok/ngrok
 - config/secrets.yml.example -> config/secrets.yml and add token
