@@ -14,6 +14,8 @@ class TelegramBot
       profile(update)
     when '/ping'
       ping(update)
+    when '/game'
+      game(update)
     else
       unknown(update)
     end
@@ -51,6 +53,37 @@ class TelegramBot
       error_message(chat_id)
     end
   end
+
+  def select_new_question(user_id)
+    played_questions = Game.where(user_id: user_id).map { |game| game.question_id }
+  
+    unplayed_questions = Question.all.reject { |question| played_questions.include?(question.id) }
+  
+    unplayed_questions.sample
+  end
+
+
+  def game(update)    
+    chat_id = user_chat_id(update)
+    
+    begin
+      user = find_user_by_id(update)    
+      question = select_new_question(user.id)
+  
+      game = Game.new(user_id: user.id, question_id: question.id)
+      if game.save
+        send_message(chat_id, 'Game started')
+        send_message(chat_id, question.text)
+      else
+        send_message(chat_id, 'Game could not be saved. Please try again.')
+      end
+    rescue ActiveRecord::RecordNotFound => e
+      send_message(chat_id, 'Profile not found, type /start to create profile')
+    rescue StandardError => e
+      error_message(chat_id)
+    end
+  end
+  
 
   def unknown(update)
     chat_id = user_chat_id(update)
