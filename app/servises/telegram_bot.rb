@@ -1,33 +1,47 @@
+require_relative 'helpers/user_helper'
+require_relative 'helpers/game_helper'
+require_relative 'helpers/message_helper'
+require_relative 'helpers/game_status_helper'
+
 class TelegramBot
+  include UserHelper
+  include GameHelper
+  include MessageHelper
+  include GameStatusHelper
+
   def initialize(token)
     @token = token
   end
 
   def call(update)
     if update['message'] && update['message']['text'] && update['message']['text'].start_with?('/')
-      command = update['message']['text'].split(' ')[0]
-      case command
-      when '/start'
-        start(update)
-      when '/profile'
-        profile(update)
-      when '/ping'
-        ping(update)
-      when '/game'
-        game(update)
-      when '/cancel'
-        cancel(update)
-      when '/hint'
-        hint(update)
-      else
-        unknown(update)
-      end
+      handle_command(update)
     else 
       handle_message(update)
     end
   end
 
   private
+
+  def handle_command(update)
+    command = update['message']['text'].split(' ')[0]
+    case command
+    when '/start'
+      start(update)
+    when '/profile'
+      profile(update)
+    when '/ping'
+      ping(update)
+    when '/game'
+      game(update) unless check_game_availability(user_chat_id(update), find_user_by_id(update).id)
+    when '/cancel'
+      cancel(update)
+    when '/hint'
+      hint(update)
+    else
+      unknown(update)
+    end
+  end
 
   def start(update)
     chat_id = user_chat_id(update)
@@ -37,9 +51,8 @@ class TelegramBot
       send_message(chat_id, "Hello, #{user.first_name} #{user.last_name}")
     rescue ActiveRecord::RecordNotFound
       from = from_user(update)
-      new_user = User.new(telegram_id: from['id'], first_name: from['first_name'], last_name: from['last_name'],
+      new_user = User.create!(telegram_id: from['id'], first_name: from['first_name'], last_name: from['last_name'],
                           username: from['username'])
-      new_user.save!
       send_message(chat_id, "Profile created, you`r welcome, #{new_user.first_name} #{new_user.last_name}")
     rescue StandardError
       error_message(chat_id)
@@ -59,37 +72,6 @@ class TelegramBot
       error_message(chat_id)
     end
   end
-
-  def select_new_question(user_id)
-    played_questions = Game.where(user_id: user_id).map { |game| game.question_id }
-  
-    unplayed_questions = Question.all.reject { |question| played_questions.include?(question.id) }
-  
-    unplayed_questions.sample
-  end
-
-  def handle_message(update) 
-    chat_id = user_chat_id(update)
-    user = find_user_by_id(update)
-  
-    message = update['message']['text']
-    current_game = Game.where(user_id: user.id, status: :active).first
-    if current_game 
-      answer(chat_id, current_game, message)
-    end
-  end
-  
-  def answer(chat_id, current_game, message)
-    question = Question.find(current_game.question_id)
-    if question.answer == message
-      send_message(chat_id, '💥 Hell Yeah 💥')
-      current_game.update!(status: :ended)
-    else
-      send_message(chat_id, 'Wrong!')
-    end
-  end
-  
-  
 
   def game(update)    
     chat_id = user_chat_id(update)
@@ -117,15 +99,15 @@ class TelegramBot
       error_message(chat_id)
     end
   end
+  
 
   def cancel(update)
     chat_id = user_chat_id(update)
     begin
       user = find_user_by_id(update)    
-      current_game = Game.where(user_id: user.id, status: :active).first
+      current_game = active_game(user.id)
       if current_game
-        current_game.status = :canceled
-        current_game.save
+        current_game.update!(status: :canceled)
         send_message(chat_id, 'Game canceled')
       else
         send_message(chat_id, 'You dont have current games, try to create one, type /game')
@@ -136,14 +118,13 @@ class TelegramBot
       error_message(chat_id)
     end
   end
-  
+
   def hint(update)
     chat_id = user_chat_id(update)
     begin
       user = find_user_by_id(update)
-      current_game = Game.where(user_id: user.id, status: :active).first
+      current_game = active_game(user.id)
       if current_game
-        question = Question.find(current_game.question_id)
         current_game.increment!(:hints_count)
         send_message(chat_id, 'hint')
       else
@@ -155,7 +136,6 @@ class TelegramBot
       error_message(chat_id)
     end
   end
-  
 
   def unknown(update)
     chat_id = user_chat_id(update)
@@ -167,27 +147,24 @@ class TelegramBot
     send_message(chat_id, 'pong')
   end
 
-  def send_message(chat_id, text)
-    HTTParty.post(
-      "https://api.telegram.org/bot#{@token}/sendMessage",
-      body: { chat_id:, text: }
-    )
+  def handle_message(update) 
+    chat_id = user_chat_id(update)
+    user = find_user_by_id(update)
+  
+    message = update['message']['text']
+    current_game = active_game(user.id)
+    if current_game 
+      answer(chat_id, current_game, message)
+    end
   end
-
-  def find_user_by_id(update)
-    user_id = from_user(update)['id']
-    User.find_by!(telegram_id: user_id)
-  end
-
-  def from_user(update)
-    update['message']['from']
-  end
-
-  def user_chat_id(update)
-    update['message']['chat']['id']
-  end
-
-  def error_message(chat_id)
-    send_message(chat_id, 'Something went wrong')
+  
+  def answer(chat_id, current_game, message)
+    question = Question.find(current_game.question_id)
+    if question.answer == message
+      send_message(chat_id, '💥 Hell Yeah 💥')
+      current_game.update!(status: :ended)
+    else
+      send_message(chat_id, 'Wrong!')
+    end
   end
 end
