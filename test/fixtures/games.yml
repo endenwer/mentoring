@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  is_active: false
+  question: MyString
+  user: one
+
+two:
+  is_active: false
+  question: MyString
+  user: two
