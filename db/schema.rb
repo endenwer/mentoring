@@ -10,25 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_26_114015) do
+ActiveRecord::Schema[7.0].define(version: 2023_05_31_080943) do
   create_table "games", force: :cascade do |t|
     t.string "status"
     t.integer "user_id", null: false
-    t.string "hints_count"
+    t.integer "hints_count"
     t.string "number"
     t.integer "question_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["question_id"], name: "index_games_on_question_id"
     t.index ["user_id"], name: "index_games_on_user_id"
-  end
-
-  create_table "question_hints", force: :cascade do |t|
-    t.integer "question_id", null: false
-    t.text "body"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["question_id"], name: "index_question_hints_on_question_id"
   end
 
   create_table "questions", force: :cascade do |t|
@@ -50,5 +42,4 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_26_114015) do
 
   add_foreign_key "games", "questions"
   add_foreign_key "games", "users"
-  add_foreign_key "question_hints", "questions"
 end
