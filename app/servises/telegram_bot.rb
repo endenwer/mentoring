@@ -1,66 +1,83 @@
-class TelegramBot < GameCommands
+class TelegramBot
   def initialize(token)
     @token = token
   end
 
   def call(update)
-    message_text = update['message'] && update['message']['text'] && update['message']['text']
+    @update = update
+
+    message_text = update['message'] && update['message']['text']
+    command = message_text.split(' ')[0]
     is_command = message_text.start_with?('/')
     is_answer = !is_command
 
-    user = find_user_by_id(update)
-    chat_id = user_chat_id(update)
-    command = update['message']['text'].split(' ')[0]
-    game = find_active_game(user) if ['/play', '/hint', '/cancel'].include?(command) || is_answer
+    return send_message('Type /start to create profile') if user.nil? && !['/start', '/ping'].include?(command)
 
-    return answer(game, chat_id, message_text) if is_answer
+    return handle_answer(message_text) if is_answer
 
-    return send_message(chat_id, 'Type /start to create profile') if user.nil? && ['/start', '/ping'].include?(command)
+    result = handle_command(command)
 
+    handle_result(result)
+  end
+
+  private
+
+  def handle_command(command)
     case command
     when '/start'
-      start(update, user, chat_id)
+      StartService.new.call(user, from_user)
     when '/profile'
-      profile(user, chat_id)
+      ProfileService.new.call(user)
     when '/ping'
-      ping(chat_id)
+      PingService.new.call
     when '/play'
-      play(user, game, chat_id)
+      PlayService.new.call(user, game)
     when '/hint'
-      hint(game, chat_id)
+      HintService.new.call(game)
     when '/cancel'
-      cancel(game, chat_id)
+      CancelService.new.call(game)
     else
-      unknown(chat_id)
+      UnknownService.new.call
     end
   end
 
-  def send_message(chat_id, text)
+  def send_message(text)
     HTTParty.post(
       "https://api.telegram.org/bot#{@token}/sendMessage",
       body: { chat_id:, text: }
     )
   end
 
-  def error_message(chat_id)
-    send_message(chat_id, 'Something went wrong')
+  def handle_answer(message_text)
+    if game.present?
+      result = AnswerService.new.call(game, message_text)
+
+      return handle_result(result)
+    end
+
+    send_message('Type /play to start a new game')
   end
 
-  def find_user_by_id(update)
-    user_id = from_user(update)['id']
-    User.find_by(telegram_id: user_id)
+  def handle_result(result)
+    return send_message(result[:message]) if result[:is_success]
+
+    send_message(result[:error_message])
   end
 
-  def find_active_game(user)
-    games = user.games.where(is_active: true)
-    games[0]
+  def user
+    user_id = from_user['id']
+    @user ||= User.find_by(telegram_id: user_id)
   end
 
-  def from_user(update)
-    update['message']['from']
+  def from_user
+    @from_user ||= @update['message']['from']
   end
 
-  def user_chat_id(update)
-    update['message']['chat']['id']
+  def chat_id
+    @chat_id ||= @update['message']['chat']['id']
+  end
+
+  def game
+    @game ||= user.games.active[0]
   end
 end

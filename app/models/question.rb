@@ -1,3 +1,5 @@
 class Question < ApplicationRecord
-  belongs_to :game
+  has_one :answer
+  has_many :games
+  has_many :hints
 end
