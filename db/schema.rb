@@ -30,6 +30,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_06_192608) do
   end
 
   create_table "hints", force: :cascade do |t|
+    t.integer "state", default: 0
     t.string "text", null: false
     t.integer "question_id", null: false
     t.datetime "created_at", null: false

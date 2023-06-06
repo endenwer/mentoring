@@ -1,6 +1,7 @@
 class CreateHint < ActiveRecord::Migration[7.0]
   def change
     create_table :hints do |t|
+      t.integer :state, default: 0
       t.string :text, null: false
       t.belongs_to :question, null: false, foreign_key: true
 

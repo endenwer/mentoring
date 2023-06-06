@@ -78,6 +78,6 @@ class TelegramBot
   end
 
   def game
-    @game ||= user.games.active[0]
+    @game ||= user.games.active.take
   end
 end
