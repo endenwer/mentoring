@@ -4,9 +4,9 @@ class HintService
   def call(game)
     return success('Type /play to start a game') if game.nil?
 
-    hint = game.question.hints.unused.take!
+    hint = game.question.hints.offset(game.hints_count).take!
 
-    hint.update!(state: :used)
+    game.increment!(:hints_count, 1)
 
     success(hint.text)
   rescue ActiveRecord::RecordNotFound

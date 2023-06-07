@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_06_192608) do
+ActiveRecord::Schema[7.0].define(version: 2023_06_07_130708) do
   create_table "answers", force: :cascade do |t|
     t.string "text"
     t.integer "question_id"
@@ -25,12 +25,12 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_06_192608) do
     t.integer "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "hints_count", default: 0
     t.index ["question_id"], name: "index_games_on_question_id"
     t.index ["user_id"], name: "index_games_on_user_id"
   end
 
   create_table "hints", force: :cascade do |t|
-    t.integer "state", default: 0
     t.string "text", null: false
     t.integer "question_id", null: false
     t.datetime "created_at", null: false
