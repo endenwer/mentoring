@@ -1,7 +1,7 @@
 class TelegramController < ApplicationController
   def index
-    bot = TelegramBot.new(Rails.application.secrets.tg_bot_token)
-    bot.call(params)
+    TelegramBotJob.perform_later(params)
+
     render json: { status: 'ok' }
   end
 end
