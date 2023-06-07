@@ -1,37 +1,38 @@
 class TelegramBot
-  def initialize(token)
+  attr_reader :message, :chat_id, :telegram_user, :db_user, :command
+
+  def initialize(token, message, chat_id, telegram_user)
     @token = token
+    @message = message
+    @chat_id = chat_id
+    @telegram_user = telegram_user
+    @db_user ||= User.find_by(telegram_id: telegram_user['id'])
+    @command = message.split(' ')[0]
   end
 
-  def call(update)
-    @update = update
-
-    message_text = update['message'] && update['message']['text']
-    command = message_text.split(' ')[0]
-    is_command = message_text.start_with?('/')
+  def call
+    is_command = message.start_with?('/')
     is_answer = !is_command
 
-    return send_message('Type /start to create profile') if user.nil? && !['/start', '/ping'].include?(command)
+    return send_message('Type /start to create profile') if db_user.nil? && !['/start', '/ping'].include?(command)
 
-    return handle_answer(message_text) if is_answer
+    return handle_answer if is_answer
 
-    result = handle_command(command)
-
-    handle_result(result)
+    handle_result(handle_command)
   end
 
   private
 
-  def handle_command(command)
+  def handle_command
     case command
     when '/start'
-      StartService.new.call(user, from_user)
+      StartService.new.call(db_user, telegram_user)
     when '/profile'
-      ProfileService.new.call(user)
+      ProfileService.new.call(db_user)
     when '/ping'
       PingService.new.call
     when '/play'
-      PlayService.new.call(user, game)
+      PlayService.new.call(db_user, game)
     when '/hint'
       HintService.new.call(game)
     when '/cancel'
@@ -48,9 +49,9 @@ class TelegramBot
     )
   end
 
-  def handle_answer(message_text)
+  def handle_answer
     if game.present?
-      result = AnswerService.new.call(game, message_text)
+      result = AnswerService.new.call(game, message)
 
       return handle_result(result)
     end
@@ -64,20 +65,7 @@ class TelegramBot
     send_message(result[:error_message])
   end
 
-  def user
-    user_id = from_user['id']
-    @user ||= User.find_by(telegram_id: user_id)
-  end
-
-  def from_user
-    @from_user ||= @update['message']['from']
-  end
-
-  def chat_id
-    @chat_id ||= @update['message']['chat']['id']
-  end
-
   def game
-    @game ||= user.games.active.take
+    @game ||= db_user.games.active.take
   end
 end
