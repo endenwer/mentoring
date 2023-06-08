@@ -10,7 +10,10 @@ class PlayService
 
     success(question.text)
   rescue ActiveRecord::RecordNotFound
-    success('No more questions')
+    question = GenerateQuestionService.new.call
+    Game.create(user_id: user.id, question_id: question.id)
+    
+    success(question.text)
   rescue StandardError => e
     failure(e)
   end

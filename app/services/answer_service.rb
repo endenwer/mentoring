@@ -5,7 +5,7 @@ class AnswerService
     @game = game
     @question = game.question
 
-    return correct_answer if @question.answer.text == answer
+    return correct_answer if @question.answer == answer
 
     incorrect_answer
   end
