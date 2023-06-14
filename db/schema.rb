@@ -10,15 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_06_07_130708) do
-  create_table "answers", force: :cascade do |t|
-    t.string "text"
-    t.integer "question_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["question_id"], name: "index_answers_on_question_id"
-  end
-
+ActiveRecord::Schema[7.0].define(version: 2023_06_14_111646) do
   create_table "games", force: :cascade do |t|
     t.integer "state", default: 0
     t.integer "question_id", null: false
@@ -42,6 +34,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_07_130708) do
     t.string "text"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "answer", null: false
   end
 
   create_table "users", force: :cascade do |t|
@@ -51,9 +44,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_06_07_130708) do
     t.string "last_name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "locale", null: false
   end
 
-  add_foreign_key "answers", "questions"
   add_foreign_key "games", "questions"
   add_foreign_key "games", "users"
   add_foreign_key "hints", "questions"

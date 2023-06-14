@@ -1,6 +1,6 @@
-require_relative "boot"
+require_relative 'boot'
 
-require "rails/all"
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -24,5 +24,9 @@ module Mentoring
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.active_job.queue_adapter = :sidekiq
+    config.eager_load_paths << Rails.root.join('lib')
+
+    I18n.load_path += Dir[File.expand_path('config/locales') + '/*.yml']
+    I18n.default_locale = :en
   end
 end

@@ -2,11 +2,13 @@ class CancelService
   include RespondService
 
   def call(game)
-    return success('No games to cancel') if game.nil?
+    return success(I18n.t('cancel_service.no_active_games')) if game.nil?
 
     game.update!(state: :canceled)
 
-    success('Game canceled')
+    answer = game.question.answer
+
+    success(I18n.t('cancel_service.game_canceled', answer:))
   rescue StandardError => e
     failure(e)
   end

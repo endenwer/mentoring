@@ -227,6 +227,7 @@ DEPENDENCIES
   bootsnap
   debug
   httparty (~> 0.21.0)
+  i18n
   puma (~> 5.0)
   rack-cors
   rails (~> 7.0.4, >= 7.0.4.3)

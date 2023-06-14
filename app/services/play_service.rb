@@ -2,17 +2,26 @@ class PlayService
   include RespondService
 
   def call(user, game)
-    return success(game.question.text) if game.present?
+    begin
+      return success(game.question.text) if game.present?
 
-    question = Question.where.not(id: answered_questions(user)).take!
+      question = Question.where.not(id: answered_questions(user)).take!
+    rescue ActiveRecord::RecordNotFound
+      begin
+        game_client = ChatGptGameClient.new(Rails.application.secrets.chat_gpt_token)
+        question_and_answer = game_client.generate_question_and_answer
+      rescue StandardError => e
+        return failure(e)
+      end
+
+      question = Question.create(text: question_and_answer[:question], answer: question_and_answer[:answer])
+    rescue StandardError => e
+      failure(e)
+    end
 
     Game.create(user_id: user.id, question_id: question.id)
 
     success(question.text)
-  rescue ActiveRecord::RecordNotFound
-    success('No more questions')
-  rescue StandardError => e
-    failure(e)
   end
 
   private

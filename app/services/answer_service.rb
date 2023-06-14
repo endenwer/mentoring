@@ -5,9 +5,18 @@ class AnswerService
     @game = game
     @question = game.question
 
-    return correct_answer if @question.answer.text == answer
+    begin
+      game_client = ChatGptGameClient.new(Rails.application.secrets.chat_gpt_token)
+      is_correct_answer = game_client.check_is_correct_answer(@question, answer)
+    rescue StandardError => e
+      return failure(e)
+    end
+
+    return correct_answer if is_correct_answer
 
     incorrect_answer
+  rescue StandardError => e
+    failure(e)
   end
 
   private
@@ -15,15 +24,18 @@ class AnswerService
   def correct_answer
     @game.update!(state: :finished)
 
-    hints_count = @question.hints.size
-    hints_text = hints_count.positive? ? " But i give you #{hints_count} hints" : ''
-
-    success("You are winner!#{hints_text}")
+    success(I18n.t('answer_service.correct_answer_success', hints_text:))
   rescue StandardError => e
     failure(e)
   end
 
   def incorrect_answer
-    success('Wrong answer, try again or type /hint')
+    success(I18n.t('answer_service.incorrect_answer_success'))
+  end
+
+  def hints_text
+    hints_count = @game.hints_count
+
+    I18n.t('answer_service.hints_text', hints_count:) if hints_count.positive?
   end
 end

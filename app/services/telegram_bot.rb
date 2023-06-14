@@ -6,15 +6,19 @@ class TelegramBot
     @message = message
     @chat_id = chat_id
     @telegram_user = telegram_user
-    @db_user ||= User.find_by(telegram_id: telegram_user['id'])
+    @db_user = User.find_by(telegram_id: telegram_user['id'])
     @command = message.split(' ')[0]
+
+    locale = db_user.present? ? db_user.locale : telegram_user['language_code']
+
+    LocaleService.new.change_locale(locale)
   end
 
   def call
     is_command = message.start_with?('/')
     is_answer = !is_command
 
-    return send_message('Type /start to create profile') if db_user.nil? && !['/start', '/ping'].include?(command)
+    return send_message(I18n.t('telegram_bot.type_start_to_create_profile')) if db_user.nil? && !['/start', '/ping'].include?(command)
 
     return handle_answer if is_answer
 
@@ -37,6 +41,10 @@ class TelegramBot
       HintService.new.call(game)
     when '/cancel'
       CancelService.new.call(game)
+    when '/en_locale'
+      LocaleService.new.update_user_locale(db_user, :en)
+    when '/ru_locale'
+      LocaleService.new.update_user_locale(db_user, :ru)
     else
       UnknownService.new.call
     end
@@ -56,7 +64,7 @@ class TelegramBot
       return handle_result(result)
     end
 
-    send_message('Type /play to start a new game')
+    send_message(I18n.t('telegram_bot.type_play_to_start_game'))
   end
 
   def handle_result(result)
