@@ -8,8 +8,8 @@ class GenerateHintService
       hint = send_message("Generate me please hint for this question. Question: #{question}; Answer: #{answer}; Hint:")
       
       new_hint = Hint.new(
-        question_id:  game.question.id,
-        text: answer
+        question_id: game.question.id,
+        text: hint
       )
       new_hint.save
       new_hint
