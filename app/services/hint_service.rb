@@ -10,7 +10,10 @@ class HintService
 
     success(hint.text)
   rescue ActiveRecord::RecordNotFound
-    success('No more hints')
+    hint = GenerateHintService.new.call game
+    game.increment!(:hints_count, 1)
+
+    success(hint.text)
   rescue StandardError => e
     failure(e)
   end
