@@ -4,7 +4,7 @@ class GenerateQuestionService
   def call
     begin
       question = send_message("Generate me please question for trivia game. Question:")
-      answer = send_message("Generate me please answer for this question. Question: #{question} Answer:")
+      answer = send_message("Generate me please simple answer for this question. Question: #{question} Answer:")
 
       new_question = Question.new(
         text: question,
