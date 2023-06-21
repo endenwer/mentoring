@@ -5,8 +5,9 @@ class AnswerService
   def call(game, answer)
     @game = game
     @question = game.question
+    @question_answer = @question.answer
     
-    if accept_answer?(answer, @question.text)
+    if accept_answer?(answer, @question.text, @question_answer)
       correct_answer
     else
       incorrect_answer
@@ -18,8 +19,8 @@ class AnswerService
 
   private
 
-  def accept_answer?(answer, question_text)
-    message = "Is this answer correct? Question: #{question_text}; Answer: #{answer}"
+  def accept_answer?(answer, question_text, question_answer)
+    message = "Is this user provided answer correct? Question: #{question_text}; RightAnswer: #{question_answer} UserProvidedAnswer: #{answer}"
     response = send_message(message)
     parse_response(response)
   end

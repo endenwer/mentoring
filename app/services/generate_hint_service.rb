@@ -5,7 +5,7 @@ class GenerateHintService
     begin
       question = game.question.text
       answer =  game.question.answer
-      hint = send_message("Generate me please hint for this question. Question: #{question}; Answer: #{answer}; Hint:")
+      hint = send_message("Generate me please hint for this question, that will not include the answer. Question: #{question}; Answer: #{answer}; Hint:")
       
       new_hint = Hint.new(
         question_id: game.question.id,
