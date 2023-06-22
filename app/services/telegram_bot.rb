@@ -1,15 +1,17 @@
 class TelegramBot
-  attr_reader :message, :chat_id, :telegram_user, :db_user, :command
+  attr_reader :message, :chat_id, :telegram_id, :first_name, :last_name, :username, :locale, :db_user, :command
 
-  def initialize(token, message, chat_id, telegram_user)
+  def initialize(token, message, chat_id, telegram_id, first_name, last_name, username, locale)
     @token = token
     @message = message
     @chat_id = chat_id
-    @telegram_user = telegram_user
-    @db_user = User.find_by(telegram_id: telegram_user['id'])
+    @telegram_id = telegram_id
+    @first_name = first_name
+    @last_name = last_name
+    @username = username
+    @db_user = User.find_by(telegram_id:)
+    @locale = db_user.present? ? db_user.locale : locale
     @command = message.split(' ')[0]
-
-    locale = db_user.present? ? db_user.locale : telegram_user['language_code']
 
     LocaleService.new.change_locale(locale)
   end
@@ -30,7 +32,7 @@ class TelegramBot
   def handle_command
     case command
     when '/start'
-      StartService.new.call(db_user, telegram_user)
+      StartService.new.call(db_user, telegram_id, first_name, last_name, username, locale)
     when '/profile'
       ProfileService.new.call(db_user)
     when '/ping'
