@@ -8,7 +8,7 @@ RSpec.describe HintService do
   let(:game) { create(:game, question: question, user: user) }
   let!(:hint) { create(:hint, question: question) }
 
-  it '_' do
+  it 'check hint returned by service' do
     service_hint = described_class.new.call game
     
     expect(service_hint[:message]).to eq hint.text
