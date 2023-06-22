@@ -1,7 +1,7 @@
 class TelegramBot
   attr_reader :message, :chat_id, :telegram_id, :first_name, :last_name, :username, :locale, :db_user, :command
 
-  def initialize(token, message, chat_id, telegram_id, first_name, last_name, username, locale)
+  def initialize(token, message, chat_id, telegram_id, first_name, last_name, username, user_locale)
     @token = token
     @message = message
     @chat_id = chat_id
@@ -10,7 +10,7 @@ class TelegramBot
     @last_name = last_name
     @username = username
     @db_user = User.find_by(telegram_id:)
-    @locale = db_user.present? ? db_user.locale : locale
+    @locale = db_user.present? ? db_user.locale : user_locale
     @command = message.split(' ')[0]
 
     LocaleService.new.change_locale(locale)

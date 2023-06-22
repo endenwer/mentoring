@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 RSpec.describe PingService do
   let(:response) { described_class.new.call }
 

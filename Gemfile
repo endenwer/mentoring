@@ -50,5 +50,5 @@ group :development do
   # gem "spring"
   gem 'solargraph'
   gem 'rspec-rails'
+  gem 'factory_bot_rails'
 end
-

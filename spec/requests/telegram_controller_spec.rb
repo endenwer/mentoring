@@ -2,14 +2,28 @@ require 'rails_helper'
 
 RSpec.describe TelegramController, type: :request do
   it 'should return success' do
-    allow(TelegramBotJob).to receive(:perform)
+    allow(TelegramBotJob).to receive(:perform_async)
 
-    params = { message: { text: 'message', chat: { id: 123 }, from: 'user' } }
+    params = {
+      message: { text: 'message', chat: { id: 123 },
+                 from: { id: 321, first_name: 'Mike', last_name: 'Vazovsky', username: 'mike_vazovsky', language_code: 'en' } }
+    }
 
-    post('/telegram', params:, as: :json)
+    form = TelegramIndexForm.build_params(params)
+
+    post('/telegram', params:)
 
     expect(response).to be_successful
 
-    expect(TelegramBotJob).to have_received(:perform).once.with(Rails.application.secrets.tg_bot_token, params[:message][:text], params[:message][:chat][:id], params[:message][:from])
+    expect(TelegramBotJob).to have_received(:perform_async).once.with(
+      Rails.application.secrets.tg_bot_token,
+      form[:message],
+      form[:chat_id],
+      form[:telegram_id],
+      form[:first_name],
+      form[:last_name],
+      form[:username],
+      form[:locale]
+    )
   end
 end
