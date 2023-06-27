@@ -1,6 +1,6 @@
 class TelegramIndexForm
   def self.build_params(params)
-    telegram_user = params.dig(:message, :from)
+    telegram_user = params.dig(:message, :from) || params.dig(:edited_message, :from)
 
     {
       message: params.dig(:message, :text),

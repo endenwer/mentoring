@@ -1,11 +1,11 @@
-class LocaleService
+class UpdateUserLocaleService
   include RespondService
 
   LOCALES = %i[en ru].freeze
 
-  def update_user_locale(db_user, locale)
+  def call(db_user, locale)
     if LOCALES.include?(locale)
-      change_locale(locale)
+      ChangeLocaleService.new.call(locale)
 
       db_user.update(locale:)
 
@@ -13,9 +13,5 @@ class LocaleService
     else
       success(I18n.t('locale_service.unsupported_locale'))
     end
-  end
-
-  def change_locale(locale)
-    I18n.locale = locale
   end
 end

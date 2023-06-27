@@ -13,7 +13,7 @@ class TelegramBot
     @locale = db_user.present? ? db_user.locale : user_locale
     @command = message.split(' ')[0]
 
-    LocaleService.new.change_locale(locale)
+    ChangeLocaleService.new.call(locale)
   end
 
   def call
@@ -44,9 +44,9 @@ class TelegramBot
     when '/cancel'
       CancelService.new.call(game)
     when '/en_locale'
-      LocaleService.new.update_user_locale(db_user, :en)
+      UpdateUserLocaleService.new.call(db_user, :en)
     when '/ru_locale'
-      LocaleService.new.update_user_locale(db_user, :ru)
+      UpdateUserLocaleService.new.call(db_user, :ru)
     else
       UnknownService.new.call
     end
