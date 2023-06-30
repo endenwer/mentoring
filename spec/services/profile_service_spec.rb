@@ -1,7 +1,8 @@
-class ProfileService
-  include RespondService
+RSpec.describe ProfileService do
+  it 'successfully show profile info' do
+    user = build(:user)
+    response = described_class.new.call(user)
 
-  def call(user)
     profile_info = I18n.t(
       'profile_service.profile_info',
       telegram_id: user.telegram_id,
@@ -11,6 +12,8 @@ class ProfileService
       games_finished: user.games.finished.size,
       games_canceled: user.games.canceled.size
     )
-    success(profile_info)
+
+    expect(response[:is_success]).to be_truthy
+    expect(response[:message]).to eq(profile_info)
   end
 end

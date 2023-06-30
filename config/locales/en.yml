@@ -1,33 +1,37 @@
-# Files in the config/locales directory are used for internationalization
-# and are automatically loaded by Rails. If you want to use locales other
-# than English, add the necessary files in this directory.
-#
-# To use the locales, use `I18n.t`:
-#
-#     I18n.t "hello"
-#
-# In views, this is aliased to just `t`:
-#
-#     <%= t("hello") %>
-#
-# To use a different locale, set it with `I18n.locale`:
-#
-#     I18n.locale = :es
-#
-# This would use the information in config/locales/es.yml.
-#
-# The following keys must be escaped otherwise they will not be retrieved by
-# the default I18n backend:
-#
-# true, false, on, off, yes, no
-#
-# Instead, surround them with single quotes.
-#
-# en:
-#   "true": "foo"
-#
-# To learn more, please read the Rails Internationalization guide
-# available at https://guides.rubyonrails.org/i18n.html.
-
 en:
-  hello: "Hello world"
+  answer_service:
+    correct_answer_success: "You are winner!%{hints_text}"
+    incorrect_answer_success: "Wrong answer, try again or type /hint"
+    hints_text: " Hints used: %{hints_count}"
+  cancel_service:
+    no_active_games: "No games to cancel"
+    game_canceled: "Game canceled. Answer: %{answer}"
+  hint_service:
+    no_active_games: "Type /play to start a game"
+  profile_service:
+    profile_info: "Telegram ID: %{telegram_id}, Username: %{username}, Fullname: %{first_name} %{last_name}, Games finished: %{games_finished}, Games canceled: %{games_canceled}"
+  start_service:
+    profile_exists: "Hello, %{first_name} %{last_name}"
+    profile_created: "Profile created, you`r welcome, %{first_name} %{last_name}"
+  telegram_bot:
+    type_start_to_create_profile: "Type /start to create profile"
+    type_play_to_start_game: "Type /play to start a new game"
+  unknown_service:
+    unknown_command: "Unknown command"
+  locale_service:
+    locale_changed: "Locale changed"
+    unsupported_locale: "Unsupported locale"
+  game_client:
+    generate_hint:
+      hints_present_text: " Hints: %{hints}. Type another hint without mentioning the answer"
+      no_hints_text: "Type hint without mentioning the answer"
+      message: "I have a question, correct answer and hints. Question: %{question}. Correct answer: %{answer}.%{hints_text}"
+    check_is_correct_answer:
+      message: "I have a question, correct answer and user answer. Question: %{question}. Correct answer: %{answer}. User answer: %{user_answer}. Is user answer correct? Type only yes or no"
+      try_rephrasing: "Try rephrasing the answer"
+      yes_answer: "yes"
+      no_answer: "no"
+    generate_question:
+      message: "Generate question for trivia game. Question:"
+    generate_answer:
+      message: "Generate answer for this question: %{question_text}. Answer:"

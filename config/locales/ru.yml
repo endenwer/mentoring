@@ -1,0 +1,37 @@
+ru:
+  answer_service:
+    correct_answer_success: "Ты победил!%{hints_text}"
+    incorrect_answer_success: "Неверно, попробуй еще или введи /hint"
+    hints_text: " Использовано подсказок: %{hints_count}"
+  cancel_service:
+    no_active_games: "Нет активных игр для отмены"
+    game_canceled: "Игра отменена. Правильный ответ: %{answer}"
+  hint_service:
+    no_active_games: "Введи /play для начала игры"
+  profile_service:
+    profile_info: "Telegram ID: %{telegram_id}, Username: %{username}, Имя: %{first_name} %{last_name}, Игр завершено: %{games_finished}, Игр отменено: %{games_canceled}"
+  start_service:
+    profile_exists: "Привет, %{first_name} %{last_name}"
+    profile_created: "Профиль создан, добро пожаловать, %{first_name} %{last_name}"
+  telegram_bot:
+    type_start_to_create_profile: "Введи /start чтобы создать профиль"
+    type_play_to_start_game: "Введи /play для начала игры"
+  unknown_service:
+    unknown_command: "Неизвестная команда"
+  locale_service:
+    locale_changed: "Язык изменен"
+    unsupported_locale: "Язык не поддерживается"
+  game_client:
+    generate_hint:
+      hints_present_text: " Подсказки: %{hints}. Дай еще одну подсказку, не упоминая ответ"
+      no_hints_text: "Дай подсказку, не упоминая ответ"
+      message: "У меня есть вопрос, верный ответ и подсказки. Вопрос: %{question}. Верный ответ: %{answer}.%{hints_text}"
+    check_is_correct_answer:
+      message: "У меня есть вопрос, верный ответ и ответ пользователя. Вопрос: %{question}. Верный ответ: %{answer}. Ответ пользователя: %{user_answer}. Ответ пользователя верный? Напиши да или нет"
+      try_rephrasing: "Попробуй перефразировать ответ"
+      yes_answer: "да"
+      no_answer: "нет"
+    generate_question:
+      message: "Придумай вопрос к игре Тривия. Вопрос:"
+    generate_answer:
+      message: "Ответь на вопрос: %{question_text}. Ответ:"

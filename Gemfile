@@ -13,6 +13,7 @@ gem "sqlite3", "~> 1.4"
 gem "puma", "~> 5.0"
 
 gem 'httparty', '~> 0.21.0'
+gem 'i18n'
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 # gem "jbuilder"
@@ -48,5 +49,6 @@ group :development do
   # Speed up commands on slow machines / big apps [https://github.com/rails/spring]
   # gem "spring"
   gem 'solargraph'
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
 end
-
