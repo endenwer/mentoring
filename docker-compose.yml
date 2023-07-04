@@ -1,0 +1,213 @@
+
+version: '3.5'
+
+services:
+  web:
+    <<: *backend
+    ports:
+      - '3000:3000'
+      - '9394:9394'
+    command: bundle exec rails server -b 0.0.0.0
+    environment:
+      <<: *environment
+      RAILS_LOG_TO_STDOUT: 'true'
+      STANDALONE_CHROME_HOST: chrome
+    depends_on:
+      - postgres
+      - redis
+      - frontend
+      - opensearch
+
+  ws:
+    image: anycable/anycable-go:1.0
+    ports:
+      - '8080:8080'
+    environment:
+      ANYCABLE_HOST: '0.0.0.0'
+      ANYCABLE_REDIS_URL: redis://redis:6379/0
+      ANYCABLE_RPC_HOST: anycable:50051
+      ANYCABLE_DEBUG: 1
+    depends_on:
+      - redis
+
+  anycable:
+    <<: *backend
+    depends_on:
+      - ws
+    ports:
+      - '50051'
+    environment:
+      <<: *environment
+      ANYCABLE_REDIS_URL: redis://redis:6379/0
+      ANYCABLE_RPC_HOST: 0.0.0.0:50051
+      ANYCABLE_DEBUG: 1
+    command: bundle exec anycable
+
+  redis:
+    image: redis:6.2.6
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis:/var/lib/redis/data:cached
+
+  postgres:
+    image: postgres:14.4
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres:/var/lib/postgresql/data:cached
+    environment:
+      POSTGRES_DB: 'taxdome_test'
+      POSTGRES_USER: 'taxdome'
+      POSTGRES_PASSWORD: 'taxdome'
+
+  sidekiq:
+    <<: *backend
+    command: sidekiq
+
+  clockwork:
+    <<: *backend
+    command: clockwork clock.rb
+
+  frontend:
+    <<: *backend
+    environment:
+      <<: *environment
+      VITE_RUBY_HOST: '0.0.0.0'
+    command: bin/vite dev
+    ports:
+      - '3036:3036'
+
+  storybook:
+    <<: *backend
+    command: yarn storybook
+    ports:
+      - '3002:3002'
+
+  chrome:
+    image: selenium/standalone-chrome:4.8.1
+    volumes:
+      - .:/app:cached
+      - /dev/shm:/dev/shm
+      - ./tmp/chrome_downloads:/downloads
+    ports:
+      - '5900:5900'
+    environment:
+      TZ: 'America/New_York'
+      SCREEN_WIDTH: 1920
+      SCREEN_HEIGHT: 1080
+    networks:
+      chrome:
+
+  nginx:
+    build:
+      context: ./docker/dev/nginx
+    restart: on-failure
+    depends_on:
+      - web
+      - frontend
+      - clammit
+    volumes:
+      - public:/app/public
+
+  balancer_nginx:
+    image: 'nginx:1.17.6'
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8443:8443'
+    depends_on:
+      - nginx
+    volumes:
+      - ./docker/dev/balancer_nginx/conf.d:/etc/nginx/conf.d
+      - public:/app/public
+
+  deploy:
+    build: ./docker/elasticbeanstalk
+    volumes:
+      - .:/app:cached
+      - ~/.ssh:/root/.ssh
+      - ~/.aws:/root/.aws
+      - ~/.bash_history:/root/.bash_history
+    working_dir: /app/docker/elasticbeanstalk
+
+  php_nginx:
+    image: 'nginx'
+    ports:
+      - '8080:80'
+    depends_on:
+      - phpfpm
+    volumes:
+      - ./docker/php_nginx/app.conf:/etc/nginx/conf.d/site.conf
+      - ./sites:/app/sites
+
+  phpfpm:
+    image: 'php:7-fpm'
+    volumes:
+      - ./public:/app
+
+  clammit:
+    build: ./docker/clammit
+    ports:
+      - '8438:8438'
+    depends_on:
+      - clamd
+
+  clamd:
+    build: ./docker/clamd
+    ports:
+      - '3310:3310'
+
+  opensearch:
+    image: opensearchproject/opensearch:2.4.0
+    container_name: opensearch
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - 'OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m'
+      - 'DISABLE_SECURITY_PLUGIN=true'
+      - network.host=0.0.0.0
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+      - ./log/opensearch:/usr/share/opensearch/logs
+    ports:
+      - '9200:9200'
+      - '9600:9600'
+    networks:
+      - opensearch-net
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - '5601:5601'
+    expose:
+      - '5601'
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+    networks:
+      - opensearch-net
+
+volumes:
+  bundle_cache:
+  postgres:
+  redis:
+  node_modules:
+  rails_cache:
+  packs:
+  public:
+  assets:
+  history:
+  opensearch-data:
+
+networks:
+  chrome:
+  opensearch-net:

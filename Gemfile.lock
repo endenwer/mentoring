@@ -129,6 +129,7 @@ GEM
     parallel (1.23.0)
     parser (3.2.2.1)
       ast (~> 2.4.1)
+    pg (1.5.3)
     puma (5.6.5)
       nio4r (~> 2.0)
     racc (1.6.2)
@@ -206,8 +207,6 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
-    sqlite3 (1.6.3)
-      mini_portile2 (~> 2.8.0)
     thor (1.2.2)
     tilt (2.1.0)
     timeout (0.3.2)
@@ -227,13 +226,13 @@ DEPENDENCIES
   bootsnap
   debug
   httparty (~> 0.21.0)
+  pg
   puma (~> 5.0)
   rack-cors
   rails (~> 7.0.4, >= 7.0.4.3)
   redis (~> 4.0)
   sidekiq (= 6.5.8)
   solargraph
-  sqlite3 (~> 1.4)
   tzinfo-data
 
 RUBY VERSION
